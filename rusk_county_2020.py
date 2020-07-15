@@ -7,7 +7,7 @@ headers = ['county','precinct','district','party','candidate','votes']
 voting_style = ['early_voting','election_day','provisional','mail']
 result = []
 
-data = tabula.read_pdf(pdf_file,guess=False,multiple_tables=True,pages=('all'))
+data = tabula.read_pdf(pdf_file,guess=False,multiple_tables=True,pages=('1-3'))
 for x in data:
     index = 0
     df = x
@@ -41,7 +41,27 @@ for x in data:
         'Unnamed: 3':'early voting',
         'Unnamed: 4':'election day'
     })
+    #print(df)
+    col_list = ['total','mail','early voting','election day']
+    totals_index_list = df.index[df['total'].isna()].tolist()
+    count_lst = df.loc[totals_index_list].isnull().sum(axis=1)
+    for index, value in count_lst.items():
+        if value == 1:
+            row = df.loc[[index]]
+            df['total'][index] = row['Summary Results Report'].str.rsplit().str[-1]
+            name = row['Summary Results Report'].str.rsplit(n=1).str[0]
+            #print(df.loc[index]['Summary Results Report'].rsplit(' ',1)[0])
+            df['Summary Results Report'][index] = df.loc[index]['Summary Results Report'].rsplit(' ',1)[0]
+            
+            
+    
+    #print(df)
+
+
+
+
     df = df.reset_index(drop=True)
     df = df.dropna(how='all')
     result.append(df)
-pd.concat(result).to_csv('pda.csv')
+print(result)
+#pd.concat(result).to_csv('pda.csv')
