@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 import math
 
-pdf_file = 'RUSK_COUNTY-2020_MARCH_3RD_DEMOCRATIC_PRIMARY_332020-DEM Pct by Pct.pdf'
+pdf_file = 'RUSK_COUNTY-2020_MARCH_3RD_REPUBLICAN_PRIMARY_332020-REP Pct by Pct.pdf'
 headers = ['county','precinct','district','party','candidate','votes']
 voting_style = ['early_voting','election_day','provisional','mail']
 result = []
 page = 1
-data = tabula.read_pdf(pdf_file,guess=False,multiple_tables=True,pages=('all'))
+data = tabula.read_pdf(pdf_file,guess=False,multiple_tables=True,pages=('118-119'))
 for x in data:
     print(page)
     index = 0
@@ -16,6 +16,7 @@ for x in data:
     df = df.drop(df.index[[0,1,2]])
     df = df[:-2]
     df = df.drop(columns = ['OFFICIAL RESULTS'])
+    print(df)
     
     #check to see if the data frame is the start of a new precinct.  If so, then remove the overall statistic data from it.
     if 'STATISTICS' in str(df.iloc[:,0][3]):
@@ -46,6 +47,7 @@ for x in data:
         'Unnamed: 3':'early voting',
         'Unnamed: 4':'election day'
     })
+           
     if len(df.columns) == 7:
        df = df.rename(columns={
         'Unnamed: 0':'total',       
@@ -54,7 +56,6 @@ for x in data:
         'Unnamed: 4':'election day',
         'Unnamed: 5':'election day'
     }) 
-    
     #clean up the first column, remove unneeded rows, and also any rows that have no values in it
     remove_strings=['Vote For 1','TOTAL']
     remove_strings_list = df.index[df['Summary Results Report'].isin(remove_strings)].tolist()
@@ -65,22 +66,41 @@ for x in data:
     totals_index_list = df.index[df['total'].isna()].tolist()
     count_lst = df.loc[totals_index_list].isnull().sum(axis=1)
     for index, value in count_lst.items():
-       
+        
         if value <= 3:
             
             row = df.loc[[index]]
-            
-            
-            
-            name = row['Summary Results Report'].str.rsplit().str[:-1]
-            count = float(df.loc[index]['Summary Results Report'].rsplit(' ',1)[1])
-            name = df.loc[index]['Summary Results Report'].rsplit(' ',1)[0]
-            df.loc[index,'total'] = count
-            df.loc[index,'Summary Results Report'] = name
-    df = df.dropna(axis='columns',how='all')        
+            #print(row)
+            # try:
+            #     df.loc[index,'total'] = df.loc[index,'Unnamed: 1']
+            #     print('first')
+            # except:
+            #     break
+            #input = df.loc[index]['Summary Results Report'].rsplit(' ',1)[1]
+            #print(type(input))
+            # if isinstance(input,float):
+            try:
+                count = float(df.loc[index]['Summary Results Report'].rsplit(' ',1)[1])
+                name = df.loc[index]['Summary Results Report'].rsplit(' ',1)[0]
+                df.loc[index,'total'] = count
+                df.loc[index,'Summary Results Report'] = name
+                #print('second')
+            except:
+                break
+    if 'Unnamed: 1' in df.columns:
+        
+        for index in df[df['Unnamed: 1'].notna()].index.tolist():
+            df.loc[index,'total'] = df.loc[index,'Unnamed: 1']
+        df = df.drop(columns=['Unnamed: 1'])   
+
+    df = df.dropna(axis='columns',how='all')
+    
+    print(df)
+    print('----------')        
 
     df = df.reset_index(drop=True)
     df = df.dropna(how='all')
     result.append(df)
     page = page+1
-pd.concat(result).to_csv('pdb.csv')
+
+# pd.concat(result).to_csv('pdb.csv')
