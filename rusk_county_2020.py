@@ -108,11 +108,11 @@ except getopt.error as err:
 
 for current_argument, current_value in arguments:
     if current_argument in ("-d", "--dem"):
-        csv_title = 'RUSK_COUNTY-2020_DEMOCRATIC_PRIMARY Pct by Pct.csv'
+        csv_title = '20200303__tx__primary__rusk__precinct_d.csv'
         pdf_file = current_value
         scrapper(pdf_file,csv_title)
     elif current_argument in ("-r", "--rep"):
-        csv_title = 'RUSK_COUNTY-2020_REPUBLICAN_PRIMARY Pct by Pct.csv'
+        csv_title = '20200303__tx__primary__rusk__precinct_r.csv'
         pdf_file = current_value
         scrapper(pdf_file,csv_title)
 
