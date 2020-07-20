@@ -23,6 +23,7 @@ def scrapper(file,title):
         print(page)
         index = 0
         df = x
+        pct = df.iloc[2,0]
         df = df.drop(df.index[[0,1,2]])
         df = df[:-2]
         df = df.drop(columns = ['OFFICIAL RESULTS'])
@@ -93,10 +94,11 @@ def scrapper(file,title):
         df.dropna(how='all', inplace=True)
         df.dropna(axis='columns',how='all', inplace=True)
         df.reset_index(drop=True, inplace=True)
-        
+
         #add in the last column which is the race for each result
         for x in df.index:
             df.loc[x,'office']=''
+            df.loc[x,'precinct'] = pct
             if 'DEM' in str(df.iloc[x,0]):
                 office_index.append(x)
                 office = df.iloc[x,0]
