@@ -18,7 +18,7 @@ def scrapper(file,title):
     page = 1
     office_index = [0]
     office = ''
-    data = tabula.read_pdf(file,guess=False,multiple_tables=True,pages=('1-7'))
+    data = tabula.read_pdf(file,guess=False,multiple_tables=True,pages=('all'))
     for x in data:
         print(page)
         index = 0
@@ -109,9 +109,12 @@ def scrapper(file,title):
                 office_index.append(x)
                 office = df.iloc[x,0]
             df.loc[x,'office'] = office
-        print(df)
+        #next two lines remove tbe heading row for each race.  To show the race above the results comment out the following block
+        df.drop(office_index,inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        #print(df)
         # print(office)
-        print(office_index)
+        #print(office_index)
         
 
         
@@ -120,7 +123,7 @@ def scrapper(file,title):
         result.append(df)
         page +=1
 
-    # pd.concat(result).to_csv(title)
+    pd.concat(result).to_csv(title)
 
 try:
     arguments, values = getopt.getopt(argument_list, short_options, long_options)
