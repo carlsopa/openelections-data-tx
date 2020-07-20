@@ -12,8 +12,10 @@ full_cmd_arguments = sys.argv
 argument_list = full_cmd_arguments[1:]
 
 def scrapper(file,title):
-    headers = ['county','precinct','district','party','candidate','votes']
-    voting_style = ['early_voting','election_day','provisional','mail']
+    #the following is a list of the headings for the columns.  The order of the headings is also how they appear in the final output.  To change the output order change it here.
+    # Note A): that Summary Results Report is taken from the actual pdf, and is therefore never actually set.
+    #Note B): the order here, is also referenced in lines 50-71.  Any changes to the order, will also need to be adjusted there as well.
+    column_headings = ['precinct','office','Summary Results Report','total','mail','early_voting','election_day']
     result = []
     page = 1
     office_index = [0]
@@ -44,27 +46,28 @@ def scrapper(file,title):
         df = df.reset_index(drop=True)
         #change column titles to comply with openelections criteria
         if len(df.columns)== 5:
+
             df = df.rename(columns={
-                'Unnamed: 1':'mail',
-                'Unnamed: 0':'total',
-                'Unnamed: 2':'early_voting',
-                'Unnamed: 3':'election_day'
+                'Unnamed: 1':column_headings[4],
+                'Unnamed: 0':column_headings[3],
+                'Unnamed: 2':column_headings[5],
+                'Unnamed: 3':column_headings[6]
             })
         if len(df.columns) >= 6:
             df = df.rename(columns={
-                'Unnamed: 0':'total',       
-                'Unnamed: 2':'mail',
-                'Unnamed: 3':'early_voting',
-                'Unnamed: 4':'election_day'
+                'Unnamed: 0':column_headings[3],       
+                'Unnamed: 2':column_headings[4],
+                'Unnamed: 3':column_headings[5],
+                'Unnamed: 4':column_headings[6]
             })
             
         if len(df.columns) == 7:
             df = df.rename(columns={
-                'Unnamed: 0':'total',       
-                'Unnamed: 2':'mail',
-                'Unnamed: 3':'early_voting',
-                'Unnamed: 4':'election_day',
-                'Unnamed: 5':'election_day'
+                'Unnamed: 0':column_headings[3],       
+                'Unnamed: 2':column_headings[4],
+                'Unnamed: 3':column_headings[5],
+                'Unnamed: 4':column_headings[6],
+                'Unnamed: 5':column_headings[6]
             }) 
         #clean up the first column, remove unneeded rows, and also any rows that have no values in it
         remove_strings=['Vote For 1','TOTAL']
@@ -97,8 +100,8 @@ def scrapper(file,title):
 
         #add in the last column which is the race for each result
         for x in df.index:
-            df.loc[x,'office']=''
-            df.loc[x,'precinct'] = pct
+            df.loc[x,column_headings[1]]=''
+            df.loc[x,column_headings[0]] = pct
             if 'DEM' in str(df.iloc[x,0]):
                 office_index.append(x)
                 office = df.iloc[x,0]
@@ -110,6 +113,8 @@ def scrapper(file,title):
         #next two lines remove tbe heading row for each race.  To show the race above the results comment out the following block
         df.drop(office_index,inplace=True)
         df.reset_index(drop=True, inplace=True)
+        #the following line re-orders the column.  
+        df = df[column_headings]
 
         office=''
         office_index=[]
