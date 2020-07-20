@@ -37,19 +37,11 @@ def scrapper(file,title):
                             df.loc[index_value,'Unnamed: 0'] =str(df.loc[index_value]['Unnamed: 1']).split()[0]
                             df.loc[index_value,'Unnamed: 1'] =str(df.loc[index_value]['Unnamed: 1']).split()[1]
             
-            
             df = df.dropna(subset=['Summary Results Report'])
             
             df = df[~df['Summary Results Report'].str.contains('Ballots')]
         df = df.reset_index(drop=True)
-        # print(df)
-        # for x in df.index:
-        #     if 'DEM' in str(df.iloc[x,0]):
-        #         print('found')
-        #         office_index.append(x)
-        #         office.append((df.iloc[x,0]))
-        #     # df.iloc[x,-1] = office[-1]
-
+        #change column titles to comply with openelections criteria
         if len(df.columns)== 5:
             df = df.rename(columns={
                 'Unnamed: 1':'mail',
@@ -101,23 +93,22 @@ def scrapper(file,title):
         df.dropna(how='all', inplace=True)
         df.dropna(axis='columns',how='all', inplace=True)
         df.reset_index(drop=True, inplace=True)
-        #print(df)
+        
+        #add in the last column which is the race for each result
         for x in df.index:
             df.loc[x,'office']=''
             if 'DEM' in str(df.iloc[x,0]):
-                # office_index.append(x)
+                office_index.append(x)
+                office = df.iloc[x,0]
+            df.loc[x,'office'] = office
+            if 'REP' in str(df.iloc[x,0]):
                 office_index.append(x)
                 office = df.iloc[x,0]
             df.loc[x,'office'] = office
         #next two lines remove tbe heading row for each race.  To show the race above the results comment out the following block
         df.drop(office_index,inplace=True)
         df.reset_index(drop=True, inplace=True)
-        #print(df)
-        # print(office)
-        #print(office_index)
-        
 
-        
         office=''
         office_index=[]
         result.append(df)
@@ -141,4 +132,3 @@ for current_argument, current_value in arguments:
         csv_title = '20200303__tx__primary__rusk__precinct_r.csv'
         pdf_file = current_value
         scrapper(pdf_file,csv_title)
-
