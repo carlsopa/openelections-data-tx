@@ -16,7 +16,9 @@ def scrapper(file,title):
     voting_style = ['early_voting','election_day','provisional','mail']
     result = []
     page = 1
-    data = tabula.read_pdf(file,guess=False,multiple_tables=True,pages=('all'))
+    office_index = [0]
+    office = ''
+    data = tabula.read_pdf(file,guess=False,multiple_tables=True,pages=('1-7'))
     for x in data:
         print(page)
         index = 0
@@ -40,6 +42,14 @@ def scrapper(file,title):
             
             df = df[~df['Summary Results Report'].str.contains('Ballots')]
         df = df.reset_index(drop=True)
+        # print(df)
+        # for x in df.index:
+        #     if 'DEM' in str(df.iloc[x,0]):
+        #         print('found')
+        #         office_index.append(x)
+        #         office.append((df.iloc[x,0]))
+        #     # df.iloc[x,-1] = office[-1]
+
         if len(df.columns)== 5:
             df = df.rename(columns={
                 'Unnamed: 1':'mail',
@@ -88,16 +98,29 @@ def scrapper(file,title):
                     df.loc[index,'Summary Results Report'] = name
                 except:
                     break
+        df.dropna(how='all', inplace=True)
+        df.dropna(axis='columns',how='all', inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        #print(df)
+        for x in df.index:
+            df.loc[x,'office']=''
+            if 'DEM' in str(df.iloc[x,0]):
+                # office_index.append(x)
+                office_index.append(x)
+                office = df.iloc[x,0]
+            df.loc[x,'office'] = office
+        print(df)
+        # print(office)
+        print(office_index)
         
 
-        df.dropna(axis='columns',how='all', inplace=True)
-
-        df.reset_index(drop=True, inplace=True)
-        df.dropna(how='all', inplace=True)
+        
+        office=''
+        office_index=[]
         result.append(df)
-        page = page+1
+        page +=1
 
-    pd.concat(result).to_csv(title)
+    # pd.concat(result).to_csv(title)
 
 try:
     arguments, values = getopt.getopt(argument_list, short_options, long_options)
